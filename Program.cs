@@ -12,7 +12,9 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"))
 var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
     ?? throw new InvalidOperationException("JWT settings are missing.");
 
-if (string.IsNullOrWhiteSpace(jwtSettings.Secret) || Encoding.UTF8.GetByteCount(jwtSettings.Secret) < 32)
+if (string.IsNullOrWhiteSpace(jwtSettings.Secret)
+    || Encoding.UTF8.GetByteCount(jwtSettings.Secret) < 32
+    || jwtSettings.Secret.Contains("replace-with", StringComparison.OrdinalIgnoreCase))
 {
     throw new InvalidOperationException("JWT Secret must be configured and at least 32 bytes.");
 }
@@ -43,13 +45,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ApiCors", policy =>
     {
-        policy.AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowAnyOrigin();
+        if (allowedOrigins.Length > 0)
+        {
+            policy.WithOrigins(allowedOrigins)
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
     });
 });
 
@@ -65,6 +71,7 @@ using (var scope = app.Services.CreateScope())
 {
     var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
     var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DatabaseInitialization");
+    var allowStartupWithoutInitialization = builder.Configuration.GetValue<bool>("Database:AllowStartupWithoutInitialization");
 
     try
     {
@@ -72,15 +79,22 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        logger.LogWarning(ex, "Database initialization failed. Startup continues.");
+        if (allowStartupWithoutInitialization)
+        {
+            logger.LogWarning(ex, "Database initialization failed and startup fallback is enabled.");
+        }
+        else
+        {
+            throw;
+        }
     }
 }
 
 app.UseHttpsRedirection();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseCors("ApiCors");
-app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthentication();
+app.UseMiddleware<AuthenticationMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();

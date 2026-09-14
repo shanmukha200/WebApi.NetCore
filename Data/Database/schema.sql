@@ -5,7 +5,7 @@ BEGIN
         Id INT IDENTITY(1,1) PRIMARY KEY,
         Username NVARCHAR(100) NOT NULL UNIQUE,
         Email NVARCHAR(200) NOT NULL UNIQUE,
-        PasswordHash NVARCHAR(256) NOT NULL,
+        PasswordHash NVARCHAR(512) NOT NULL,
         Role NVARCHAR(50) NOT NULL,
         IsActive BIT NOT NULL DEFAULT 1,
         CreatedAt DATETIME2 NOT NULL,

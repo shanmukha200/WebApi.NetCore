@@ -20,7 +20,7 @@ Production-ready ASP.NET Core Web API using **JWT authentication**, **refresh to
 - `Models/` (`User`, `RefreshToken`, `PaginationResult`)
 - `Dtos/` (request/response contracts)
 - `Middleware/` (`ErrorHandlingMiddleware`, `AuthenticationMiddleware`)
-- `Utilities/` (`PasswordHasher` SHA256)
+- `Utilities/` (`PasswordHasher` PBKDF2-SHA256)
 - `Constants/` (`AppConstants` roles)
 
 ## Prerequisites
@@ -75,7 +75,7 @@ Production-ready ASP.NET Core Web API using **JWT authentication**, **refresh to
 
 ## Security Notes
 
-- Passwords are hashed with SHA256 (`Utilities/PasswordHasher.cs`) per requirement.
+- Passwords are hashed using PBKDF2 with SHA256 (`Utilities/PasswordHasher.cs`).
 - Refresh tokens are stored server-side and revoked on rotation/logout.
 - Global exception middleware normalizes API errors.
 - Admin APIs require `[Authorize(Roles = "Admin")]`.

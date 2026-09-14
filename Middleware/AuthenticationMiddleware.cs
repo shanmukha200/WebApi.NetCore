@@ -9,7 +9,7 @@ public class AuthenticationMiddleware(RequestDelegate next)
         if (hasHeader && !authorization.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
         {
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new { message = "Invalid authorization scheme. Use JWT scheme" });
+            await context.Response.WriteAsJsonAsync(new { message = "Invalid authorization scheme." });
             return;
         }
 

@@ -1,6 +1,12 @@
 @WebApi.NetCore_HostAddress = http://localhost:5150
 
-GET {{WebApi.NetCore_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{WebApi.NetCore_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "username": "sampleuser",
+  "email": "sample.user@example.com",
+  "password": "StrongPass123!"
+}
 
 ###

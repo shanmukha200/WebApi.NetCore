@@ -14,7 +14,7 @@ public class ErrorHandlingMiddleware(RequestDelegate next, ILogger<ErrorHandling
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Unhandled exception occurred while processing {Path}", context.Request.Path);
+            logger.LogError(exception, "Unhandled exception occurred while processing request.");
             await HandleExceptionAsync(context, exception);
         }
     }

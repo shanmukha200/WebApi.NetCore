@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+
 namespace WebApi.NetCore.Data.Database;
 
 public class DatabaseInitializer(IDataAccess dataAccess, ILogger<DatabaseInitializer> logger)
@@ -13,7 +15,8 @@ public class DatabaseInitializer(IDataAccess dataAccess, ILogger<DatabaseInitial
         }
 
         var sql = await File.ReadAllTextAsync(scriptPath, cancellationToken);
-        var commands = sql.Split("GO", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var commands = Regex.Split(sql, @"^\s*GO\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase)
+            .Where(command => !string.IsNullOrWhiteSpace(command));
 
         foreach (var command in commands)
         {

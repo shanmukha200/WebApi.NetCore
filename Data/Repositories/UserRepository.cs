@@ -63,7 +63,8 @@ public class UserRepository(IDataAccess dataAccess) : IUserRepository
             new { Id = id, PasswordHash = passwordHash, UpdatedAt = DateTime.UtcNow }, cancellationToken) > 0;
 
     public async Task<bool> DeleteAsync(int id, CancellationToken cancellationToken = default)
-        => await dataAccess.ExecuteAsync("DELETE FROM Users WHERE Id = @Id;", new { Id = id }, cancellationToken) > 0;
+        => await dataAccess.ExecuteAsync("UPDATE Users SET IsActive = 0, UpdatedAt = @UpdatedAt WHERE Id = @Id;",
+            new { Id = id, UpdatedAt = DateTime.UtcNow }, cancellationToken) > 0;
 
     public Task<int> CountByRoleAsync(string role, CancellationToken cancellationToken = default)
         => dataAccess.ExecuteScalarAsync<int>("SELECT COUNT(1) FROM Users WHERE Role = @Role;", new { Role = role }, cancellationToken);

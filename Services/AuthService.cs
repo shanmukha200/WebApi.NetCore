@@ -95,10 +95,8 @@ public class AuthService(
             throw new UnauthorizedAccessException("User is inactive.");
         }
 
-        await refreshTokenRepository.RevokeAsync(existingToken.Id, cancellationToken);
-
         var newTokens = jwtTokenService.GenerateTokens(user);
-        await refreshTokenRepository.CreateAsync(new RefreshToken
+        var rotated = await refreshTokenRepository.RotateAsync(existingToken.Id, new RefreshToken
         {
             UserId = user.Id,
             Token = newTokens.RefreshToken,
@@ -106,6 +104,11 @@ public class AuthService(
             IsRevoked = false,
             CreatedAt = DateTime.UtcNow
         }, cancellationToken);
+
+        if (!rotated)
+        {
+            throw new UnauthorizedAccessException("Refresh token is no longer valid.");
+        }
 
         return newTokens;
     }
